@@ -1,6 +1,12 @@
 # SDTESIS_2
-Android Studio TESIS ISC UCOL FIE
+Universidad de Colima \\
+Facultad de Ingeniería Electromecánica \\
+Ingeniería en Sistemas Computacionales \\
 
-AÚN HAY CAMBIOS EN EL PROYECTO
+Reconocimiento de patrones para la verificación en la sustentabilidad de un producto comercial
 
-TENSORFLOW LITE, MODELO CNN, CLASIFICACIÓN DE OBJETOS SUSTENTABLES
+MARCO ANTONIO PRADO GARCÍA
+
+Aplicación de Android con tensorflow lite implementado.
+
+Por el momento solo hay un imageView, textView y dos buttons, para mostrar los resultados del reconocimiento de objetos en las imagenes.
