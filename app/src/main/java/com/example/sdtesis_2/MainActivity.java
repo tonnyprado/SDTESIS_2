@@ -2,8 +2,10 @@ package com.example.sdtesis_2;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.View;
@@ -14,12 +16,14 @@ import android.widget.TextView;
 import com.example.sdtesis_2.ml.TfliteModel;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.common.aliasing.qual.MaybeAliased;
 import org.tensorflow.lite.DataType;
 import org.tensorflow.lite.Interpreter;
 import org.tensorflow.lite.support.image.TensorImage;
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
@@ -33,9 +37,9 @@ public class MainActivity extends AppCompatActivity {
     //PROBABLEMENTE ESTE BITMAP CAUSE PROBLEMAS, VIGILALO
     Bitmap imgBitmap;
 
-    private Interpreter interpreter;
+    //private Interpreter interpreter;
 
-    private String modelPATH = "tflite_model.tflite";
+    //private String modelPATH = "tflite_model.tflite";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
             String mLine;
             while ((mLine = reader.readLine()) != null) {
                 //process line
-                townList = mLine.split("\n"); //AQUI HICE CAMBIOS, WARNING
+                townList = mLine.split("\n"); //AQUI HICE CAMBIOS, WARNING, HACER EL TOWN
             }
         } catch (IOException e) {
             //log the exception
@@ -77,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        //AQUI LE DOY CLICK AL BOTON DE LA CAMARA
         btnCamara.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -90,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Bitmap resizedBitm = Bitmap.createScaledBitmap(imgBitmap, 32, 32, true);
-                //ARREGLA ESTA PARTE
+
                 try {
                     TfliteModel model = TfliteModel.newInstance(getApplicationContext());
 
@@ -140,22 +145,37 @@ public class MainActivity extends AppCompatActivity {
 
     }*/
 
-    // SOLO ACTIVAS LA ACCION DE LA CAMARA CON ESTAS DOS FUNCIONES
+    // SOLO ACTIVAS LA ACCION DE LA CAMARA CON ESTAS DOS FUNCIONES Y TOMAS LA FOTO
     private void abrirCamara(){
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        Intent fotointent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // 2
         //Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         //intent.setType("image/*");
-        startActivityForResult(intent, 1);
+        Uri captureImage = Uri.fromFile(getTempFile());
+        fotointent.putExtra(MediaStore.EXTRA_OUTPUT, captureImage);
+
+        if(fotointent.resolveActivity(getPackageManager()) != null){
+            startActivityForResult(fotointent, 1);
+        }
     }
 
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1 && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
             Bitmap imgBitmap = (Bitmap) extras.get("data");
-            imageView.setImageBitmap(imgBitmap);
+
+            Uri uri = data.getData();
+            Intent intent = new Intent();
+            intent.setClass(MainActivity.this, MainActivity.class);
+            intent.putExtra("Bitmap",imgBitmap);
+            startActivity(intent);
+
+            imageView.setImageBitmap(imgBitmap); //POSIBLEMENTE CAMBIA IMGBITMAP TO BITMAP2
         }
+
+        
     }
 
     private int getMax(@NonNull float[] arR){
