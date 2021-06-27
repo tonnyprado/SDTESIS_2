@@ -1,8 +1,14 @@
 package com.example.sdtesis_2;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.Application;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -26,7 +32,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -37,9 +45,15 @@ public class MainActivity extends AppCompatActivity {
     //PROBABLEMENTE ESTE BITMAP CAUSE PROBLEMAS, VIGILALO
     Bitmap imgBitmap;
 
+    /*
+    private static Application myApp = getApp();
+    private static ArrayList<File> myTempFiles = new ArrayList<File>();*/
+
     //private Interpreter interpreter;
 
     //private String modelPATH = "tflite_model.tflite";
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +70,8 @@ public class MainActivity extends AppCompatActivity {
         /*String filename = "labels.txt";
         String inputString = String(getApplication().getAssets().open(filename).bufferReader().use{it.readText()});
         String[] townList = inputString.split("\n");*/
+
+
 
         BufferedReader reader = null;
         try {
@@ -85,7 +101,8 @@ public class MainActivity extends AppCompatActivity {
         btnCamara.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                abrirCamara();
+                //abrirCamara();
+                openSomeActivityForResult();
             }
         });
 
@@ -135,6 +152,36 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        // There are no request codes
+                        Intent data = result.getData();
+                        //doSomeOperations();
+
+                        Bundle extras = data.getExtras();
+                        Bitmap imgBitmap = (Bitmap) extras.get("data");
+
+                        Uri uri = data.getData();
+                        Intent intent = new Intent();
+                        intent.setClass(MainActivity.this, MainActivity.class);
+                        intent.putExtra("Bitmap",imgBitmap);
+                        startActivity(intent);
+
+                        imageView.setImageBitmap(imgBitmap); //POSIBLEMENTE CAMBIA IMGBITMAP TO BITMAP2
+                    }
+                }
+            });
+
+    public void openSomeActivityForResult(){
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        someActivityResultLauncher.launch(intent);
+    }
+
     // FUNCIÓN DE LA CAMARA SE CONECTA CON EL MODELO EN ESTA PARTE
     /*private void initCamara() {
         findViewById(R.id.imageView).setOnClickListener((View.OnClickListener) this);
@@ -145,7 +192,55 @@ public class MainActivity extends AppCompatActivity {
 
     }*/
 
+    /* GETTEMPFILE FUNCTION*/
+    /*
+    public static File getTempFile(String tmpName) {
+        // getExternalCacheDir() returns something like /mnt/sdcard/Android/data/[package_name]/cache/
+        File file = new File(getApp().getApplicationContext()
+                .getExternalCacheDir(), tmpName);
+        myTempFiles.add(file);
+        return file;
+    }
+
+    public static File getTempFile() {
+        return getTempFile("temp", ".tmp");
+    }
+
+    public static File getTempFile(String prefix, String suffix) {
+        File file = null;
+        try {
+            file = File.createTempFile(prefix, suffix, getApp()
+                    .getApplicationContext().getExternalCacheDir());
+            myTempFiles.add(file);
+        } catch (Exception e) {
+        }
+        return file;
+    }
+
+    public static Application getApp() {
+        if (myApp == null) {
+            try {
+                @SuppressLint("PrivateApi") final Class<?> activityThreadClass = Class
+                        .forName("android.app.ActivityThread");
+                final Method method = activityThreadClass
+                        .getMethod("currentApplication");
+                myApp = (Application) method.invoke(null, (Object[]) null);
+            } catch (Exception e) {
+                // handle exception
+            }
+        }
+        // below gives me /mnt/sdcard/Android/data/com.hyperionics.pdfxTest/cache/tmpPdfx
+        // File file = new File(app.getApplicationContext().getExternalCacheDir(), "tmpPdfx");
+        return myApp;
+    }
+
+
+     */
+    /* GETTEMPFILE FUNCTION END */
+
+
     // SOLO ACTIVAS LA ACCION DE LA CAMARA CON ESTAS DOS FUNCIONES Y TOMAS LA FOTO
+    /* FUE REEMPLAZADO
     private void abrirCamara(){
         Intent fotointent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // 2
@@ -176,7 +271,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         
-    }
+    } ESTO FUE REEMPLAZADO */
 
     private int getMax(@NonNull float[] arR){
         int ind = 0;
